@@ -1,18 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+// ✅ API Route
 app.post('/api/generate-wish', async (req, res) => {
   try {
-    const { target, tone, language } = req.body; // ✅ Language added
+    const { target, tone } = req.body;
 
-    // ✅ Short & Sweet Prompts
     const tonePrompts = {
       'philosophical': {
         system: `You are a philosophical writer. Write ONE short inspiring quote from Socrates, Rumi, Kabir, or Chanakya with 2-3 lines of New Year wish. Total under 60 words.`,
@@ -59,17 +63,11 @@ app.post('/api/generate-wish', async (req, res) => {
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: [
-          {
-            role: 'system',
-            content: prompt.system
-          },
-          {
-            role: 'user',
-            content: prompt.user
-          }
+          { role: 'system', content: prompt.system },
+          { role: 'user', content: prompt.user }
         ],
         temperature: 0.85,
-        max_tokens: 150  // ✅ Reduced for shorter output
+        max_tokens: 150
       })
     });
 
@@ -88,7 +86,16 @@ app.post('/api/generate-wish', async (req, res) => {
   }
 });
 
+// ✅ Serve React build files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
