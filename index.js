@@ -94,6 +94,7 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
+console.log("Happy New Year 2026");
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
